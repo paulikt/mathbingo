@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>MathBingo</title>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+    <script
+        src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+
+    <style type="text/css">
+      @media print {
+         .noprint { display:none; }
+         .print .bingoGrid{
+           page-break-inside: avoid !important;
+         }
+      }
+
+      .control div {
+        margin: 10px;
+      }
+
+      .bingoFieldWrapper {
+        margin-top: 10px;
+      }
+
+      .sidebyside {
+        display: inline-block;
+        width: 40%;
+        min-height: 100px;
+        margin-right: 10px;
+        margin-top: 5px;
+        vertical-align: top;
+        text-align: left;
+      }
+
+      .bingoGrid {
+        display: grid;
+        grid-template-columns: 25% 25% 25% 25%;
+        grid-gap: 1px;
+        border: 2px solid black;
+        padding: 10px;
+        margin: 10px
+      }
+
+      .bingoGrid div {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="control noprint">
+      <div>
+        <input id="fieldCount" type="number" value="16" />
+        <button id="initBingo">Init</button>
+      </div>
+      <div>
+        <input id="boardCount" type="number" value="3" />
+        <button id="generateBingo">Generate</button>
+        <button id="editButton">Edit</button>
+      </div>
+      <div>
+        <p><span>$</span><span>$</span> Latex Math <span>$</span><span>$</span> <a href="https://www.overleaf.com/learn/latex/Mathematical_expressions">Tutorial</a></p>
+      </div>
+      <hr/>
+    </div>
+
+    <div id="output" class="print"></div>
+    <div id="input" class="noprint"></div>
+
+  </body>
+  <script>
+    var output = $('#output');
+    var input = $('#input');
+
+    $('#initBingo').click(function() {
+      $(output).empty();
+      $(output).hide();
+
+      $(input).empty();
+      $(input).show();
+
+      for (let i = 0; i < $('#fieldCount').val(); i++) {
+        let html = `<div class="bingoFieldWrapper">
+      <label>${i + 1}.</label>
+      <textarea class="bingoSource sidebyside">${i + 1} $$x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}$$</textarea>
+      <div class="bingoPreview sidebyside"></div>
+    </div>`;
+        $('#input').append(html);
+      }
+
+      $('.bingoFieldWrapper').each(function() {
+        $(this).keyup(function() {
+          let source = $(this).find('.bingoSource');
+          let preview = $(this).find('.bingoPreview');
+          $(preview).html($(source).val());
+          MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        });
+        $(this).keyup();
+      });
+    });
+
+
+    $('#editButton').click(function() {
+      $(input).show();
+      $(output).hide();
+    });
+
+    $('#generateBingo').click(function() {
+      $(output).empty();
+
+      let count = $('#boardCount').val();
+
+      for (let i = 0; i < count; i++) {
+        generateBoard(output, i);
+      }
+
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+      $(input).hide();
+      $(output).show();
+    });
+
+    function generateBoard(output, index) {
+      let grid = $('<div>');
+      $(grid).addClass('bingoGrid');
+
+      let header = $('<h3>');
+      $(header).text(index + 1);
+
+      //$(output).append(header);
+      $(output).append(grid);
+
+      $('.bingoFieldWrapper').each(function() {
+        let source = $(this).find('.bingoSource');
+        let div = $('<div>');
+        div.html($(source).val());
+        $(grid).append(div);
+      });
+
+      randomize(grid);
+    }
+
+    function randomize(anchor) {
+      var cards = $(anchor).find("div");
+      for (var i = 0; i < cards.length; i++) {
+        var target = Math.floor(Math.random() * cards.length - 1) + 1;
+        var target2 = Math.floor(Math.random() * cards.length - 1) + 1;
+        cards.eq(target).before(cards.eq(target2));
+      }
+    }
+
+
+  </script>
+</html>
